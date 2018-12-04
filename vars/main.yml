@@ -1,0 +1,11 @@
+---
+fluentb_log_apt:
+  key: https://packages.fluentbit.io/fluentbit.key 
+  repo: deb https://packages.fluentbit.io/debian/stretch stretch main
+  pkg: td-agent-bit
+
+fluentb_log_exec: /opt/td-agent-bit/bin/td-agent-bit
+fluentb_log_config: '/home/fluentb/{{ fluentb_log_name }}.conf'
+fluentb_log_pidfile: '/home/fluentb/{{ fluentb_log_name }}.pid'
+fluentb_log_service: 'fluentb-{{ fluentb_log_name }}'
+fluentb_log_parsersfile: '/home/fluentb/{{ fluentb_log_name }}-parser.conf'

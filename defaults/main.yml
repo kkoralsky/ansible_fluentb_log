@@ -1,0 +1,25 @@
+---
+fluentb_log_name: syslog
+fluentb_log_tag: '{{ fluentb_log_name }}'
+fluentb_log_path: /var/log/syslog
+fluentb_log_exclude_path: 
+fluentb_log_db: '/home/fluentb/{{ fluentb_log_name }}.db'
+
+fluentb_log_parser: default
+fluentb_log_parser_format: regex
+# syslog rfc5424 regex
+fluentb_log_parser_regex: ^\<(?<pri>[0-9]{1,5})\>1 (?<time>[^ ]+) (?<host>[^ ]+) (?<ident>[^ ]+) (?<pid>[-0-9]+) (?<msgid>[^ ]+) (?<extradata>(\[(.*)\]|-)) (?<message>.+)$
+fluentb_log_parser_time_format: '%Y-%m-%dT%H:%M:%S.%L'
+fluentb_log_parser_time_keep: yes
+fluentb_log_parser_time_key: time
+
+# this is needed to trigger template fill in 
+fluentb_log_parsers: [{name: '{{ fluentb_log_parser }}'}]
+fluentb_log_inputs: [{path: '{{ fluentb_log_path }}'}]
+
+fluentb_log_es_host: 127.0.0.1
+fluentb_log_es_port: 9200 
+fluentb_log_es_tag_key: app
+fluentb_log_es_replace_dots: yes
+
+fluentb_log_install: yes

@@ -1,0 +1,29 @@
+[SERVICE]
+    Flush        1
+    Daemon       Off
+    Log_Level    info
+    Parsers_File  {{ fluentb_log_parsersfile }}
+{% for input in fluentb_log_inputs %}
+[INPUT]
+    Name   tail
+    Path   {{ input.path|default(fluentb_log_path) }} 
+{% if input.tag is defined %}
+    Tag    {{ input.tag }}
+{% else %}
+    Tag    {{ input.path|basename|splitext|first }}
+{% endif %}
+    DB     {{ input.db|default(fluentb_log_db) }}
+    Parser {{ input.parser|default(fluentb_log_parser) }}
+{% if input.exclude_path|default(fluentb_log_exclude_path) %}
+    Exclude_Path {{ input.exclude_path|default(fluentb_log_exclude_path) }}
+{% endif %}
+{% endfor %}
+[OUTPUT]
+    Name  es
+    Match *
+    Host  {{ fluentb_log_es_host }}
+    Port  {{ fluentb_log_es_port }}
+    Tag_Key {{ fluentb_log_es_tag_key }}
+    Include_Tag_Key On
+    Logstash_Format On
+    Replace_Dots {% if fluentb_log_es_replace_dots %}On{% else %}Off{% endif %}

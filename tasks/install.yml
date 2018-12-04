@@ -1,0 +1,10 @@
+---
+- name: ensure certificates and gnupg is installed
+  apt:
+    name: [ca-certificates, gnupg, apt-transport-https]
+- name: add repository key
+  apt_key: url='{{ fluentb_log_apt.key }}'
+- name: add apt repository
+  apt_repository: repo='{{ fluentb_log_apt.repo }}'
+- name: install fluentb from apt repo
+  apt: name='{{ fluentb_log_apt.pkg }}'

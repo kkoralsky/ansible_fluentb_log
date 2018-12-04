@@ -1,0 +1,8 @@
+---
+- name: systemd daemon reload
+  systemd: daemon_reload=yes
+  become: true
+
+- name: restart fluentb service
+  service: name='{{ fluentb_log_service }}' state=restarted
+  become: true
