@@ -1,10 +1,23 @@
 ---
 - import_tasks: install.yml
   when: fluentb_log_install|bool
+  become: true
   tags: [fluentb_log_install, install, superuser]
 
 - name: create fluentb user
-  user: name=fluentb
+  user: name='{{ fluentb_log_user }}'
+  become: true
+  tags: superuser
+
+- name: create fluentb directory
+  file: name='{{ fluentb_log_home }}' state=directory recurse=yes
+  become: true
+  tags: superuser
+
+- name: set home directory permissions
+  file: name='{{ fluentb_log_home }}' state=directory owner='{{ fluentb_log_user }}'
+  become: true
+  tags: superuser
 
 - block:
   - name: configure systemd service
@@ -14,9 +27,11 @@
       - restart fluentb service
       - systemd daemon reload
   - name: disable td-agent-bit
-    systemd: name=td-ageng-bit enabled=no
+    systemd: name=td-agent-bit enabled=no
     notify: systemd daemon reload
   when: ansible_service_mgr == "systemd"
+  become: true
+  tags: superuser
 - block:
   - name: configure init.d script
     template: src=initd.sh.j2 dest='/etc/init.d/{{ fluentb_log_service }}' mode=+x
@@ -25,15 +40,17 @@
     file: src='/etc/init.d/{{ fluentb_log_service }}' state=link
           dest='/etc/rc2.d/S99{{ fluentb_log_service }}'
   when: ansible_service_mgr != "systemd"
+  become: true
+  tags: superuser
 
 - name: configure fluentb agent
-  template: src=conf.j2 dest='{{ fluentb_log_config }}' owner=fluentb
-            group=fluentb
+  template: src=conf.j2 dest='{{ fluentb_log_config }}' owner='{{ fluentb_log_user }}'
   notify: restart fluentb service
+  tags: upgrade
 
 - name: configure parsers
-  template: src=parsers.j2 dest='{{ fluentb_log_parsersfile }}' owner=fluentb
-            group=fluentb
+  template: src=parsers.j2 dest='{{ fluentb_log_parsersfile }}' owner='{{ fluentb_log_user }}'
+  tags: upgrade
 
 - name: ensure fluentb service is running
   service: name='{{ fluentb_log_service }}' state=started

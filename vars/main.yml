@@ -5,7 +5,8 @@ fluentb_log_apt:
   pkg: td-agent-bit
 
 fluentb_log_exec: /opt/td-agent-bit/bin/td-agent-bit
-fluentb_log_config: '/home/fluentb/{{ fluentb_log_name }}.conf'
-fluentb_log_pidfile: '/home/fluentb/{{ fluentb_log_name }}.pid'
+fluentb_log_config: '{{ fluentb_log_home }}/{{ fluentb_log_name }}.conf'
+fluentb_log_pidfile: '{{ fluentb_log_home }}/{{ fluentb_log_name }}.pid'
+fluentb_log_logfile: '{{ fluentb_log_home }}/{{ fluentb_log_name }}.log'
 fluentb_log_service: 'fluentb-{{ fluentb_log_name }}'
-fluentb_log_parsersfile: '/home/fluentb/{{ fluentb_log_name }}-parser.conf'
+fluentb_log_parsersfile: '{{ fluentb_log_home }}/{{ fluentb_log_name }}-parser.conf'
