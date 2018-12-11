@@ -2,6 +2,7 @@
     Flush        1
     Daemon       Off
     Log_Level    info
+    Log_File     {{ fluentb_log_logfile }}
     Parsers_File  {{ fluentb_log_parsersfile }}
 {% for input in fluentb_log_inputs %}
 [INPUT]
@@ -13,17 +14,50 @@
     Tag    {{ input.path|basename|splitext|first }}
 {% endif %}
     DB     {{ input.db|default(fluentb_log_db) }}
+{% if input.parsers is defined %}
+    Multiline On
+    Parser_Firstline {{ input.parsers|first }}
+{% for parser in input.parsers %}
+    {% if forloop.index != 1 and forloop.index != forloop.length %}
+    Parser_{{ forloop.index0 }} {{ parser }}
+    {% endif %}
+{% endfor %}
+    Parser_N {{ input.parsers|last }}
+{% else %}
     Parser {{ input.parser|default(fluentb_log_parser) }}
+{% endif %}
 {% if input.exclude_path|default(fluentb_log_exclude_path) %}
     Exclude_Path {{ input.exclude_path|default(fluentb_log_exclude_path) }}
 {% endif %}
+    Skip_Long_Lines On
 {% endfor %}
-[OUTPUT]
-    Name  es
-    Match *
+
+{% if fluentb_log_output_map is defined %}
+{% for output in fluentb_log_outputs|dict2items %}
+[OUTPUT] {# multiple indexes #}
+    Name  es_{{ forloop.index0 }}
+    Match {{ output.key }}
     Host  {{ fluentb_log_es_host }}
     Port  {{ fluentb_log_es_port }}
     Tag_Key {{ fluentb_log_es_tag_key }}
     Include_Tag_Key On
-    Logstash_Format On
+    Logstash_Format {% if fluentb_log_logstash_format %}On{% else %}Off{% endif %}
+
+    Logstash_Prefix {{ output.value }}     
     Replace_Dots {% if fluentb_log_es_replace_dots %}On{% else %}Off{% endif %}
+
+{% endfor %}
+{% else %}  {# single output #}
+[OUTPUT]
+    Name  es_{{ forloop.index0 }}
+    Match {{ output.value  }}
+    Host  {{ fluentb_log_es_host }}
+    Port  {{ fluentb_log_es_port }}
+    Tag_Key {{ fluentb_log_es_tag_key }}
+    Include_Tag_Key On
+    Logstash_Format {% if fluentb_log_logstash_format %}On{% else %}Off{% endif %}
+
+    Logstash_Prefix {{ fluentb_log_logstash_prefix }}     
+    Replace_Dots {% if fluentb_log_es_replace_dots %}On{% else %}Off{% endif %}
+    Logstash_Prefix {{ fluentb_log_logstash_prefix }}     
+{% endif %}
