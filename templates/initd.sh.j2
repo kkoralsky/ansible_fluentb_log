@@ -20,7 +20,7 @@ CONFIG={{ fluentb_log_config }}
 case "$1" in
     start)
         start-stop-daemon --start --make-pidfile --pidfile $PID \
-            --background --chuid fluentb --exec $DAEMON -- -c $CONFIG
+            --background --chuid {{ fluentb_log_user }} --exec $DAEMON -- -c $CONFIG
     ;;
     stop)
         start-stop-daemon --stop --pidfile $PID --remove-pidfile

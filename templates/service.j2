@@ -6,8 +6,8 @@ After=network.target
 [Service]
 Restart=always
 Type=forking
-User=fluentb
-ExecStart=start-stop-daemon --start --makepidfile --pidfile {{ fluentb_log_pidfile }}
+User={{ fluentb_log_user }}
+ExecStart=/sbin/start-stop-daemon --start --makepidfile --pidfile {{ fluentb_log_pidfile }} \
     --background --exec {{ fluentb_log_exec }} -- -c {{ fluentb_log_config }}
 ExecStop=start-stop-daemon --stop --pidfile {{ fluentb_log_pidfile }} --removepidfile
 PIDFile={{ fluentb_log_pidfile }}
