@@ -1,19 +1,31 @@
-{% for parser in fluentb_log_parsers %}
+{% for parser in fluentb_log_parsers|dict2items %}
 [PARSER]
-    Name {{ parser.name|default(fluentb_log_parser) }}
-    Format {{ parser.format|default(fluentb_log_parser_format) }}
-{% if parser.format|default(fluentb_log_parser_format) == 'regex' %}
-    Regex {{ parser.regex|default(fluentb_log_parser_regex) }}
+    Name {{ parser.key }}
+{% if parser.value is mapping %}
+{% if parser.value.format|default(fluentb_log_parser_format) == 'regex' %}
+    Regex {{ parser.value.regex|default(fluentb_log_parser_regex) }}
 {% endif %}
-    Time_Key {{ parser.time_key|default(fluentb_log_parser_time_key) }}
-    Time_Format {{ parser.time_format|default(fluentb_log_parser_time_format) }}
-{% if parser.decoders is defined %}
-{% for decoder in parser.decoders %}
+    Format {{ parser.value.format|default(fluentb_log_parser_format) }}
+    Time_Key {{ parser.value.time_key|default(fluentb_log_parser_time_key) }}
+    Time_Format {{ parser.value.time_format|default(fluentb_log_parser_time_format) }}
+{% if parser.value.decoders is defined %}
+{% for decoder in parser.value.decoders %}
     Decode_Field {{ decoder }}
 {% endfor %}
 {% endif %}
-    Time_Keep {% if parser.time_keep|default(fluentb_log_parser_time_keep) %}On{% else %}Off{% endif %}
-{% if parser.types is defined %}
-    Types {% for type in parser.types %}{{ type }}{% endfor %}
+    Time_Keep {% if parser.value.time_keep|default(fluentb_log_parser_time_keep) %}On{% else %}Off{% endif %}
+
+{% if parser.value.types is defined %}
+    Types {% for type in parser.value.types %}{{ type }}{% endfor %}
+{% endif %}
+{% else %}
+    Format {{ fluentb_log_parser_format }}
+{% if fluentb_log_parser_format == 'regex' %}
+    Regex {{ parser.value }}
+{% endif %}
+    Time_Key {{ fluentb_log_parser_time_key }}
+    Time_Keep {% if fluentb_log_parser_time_keep|bool %}On{% else %}Off{% endif %}
+
+    Time_Format {{ fluentb_log_parser_time_format }}
 {% endif %}
 {% endfor %}
