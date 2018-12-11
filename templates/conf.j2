@@ -18,9 +18,9 @@
     Multiline On
     Parser_Firstline {{ input.parsers|first }}
 {% for parser in input.parsers %}
-    {% if forloop.index != 1 and forloop.index != forloop.length %}
-    Parser_{{ forloop.index0 }} {{ parser }}
-    {% endif %}
+{% if loop.index != 1 and loop.index != loop.length %}
+    Parser_{{ loop.index0 }} {{ parser }}
+{% endif %}
 {% endfor %}
     Parser_N {{ input.parsers|last }}
 {% else %}
@@ -32,32 +32,34 @@
     Skip_Long_Lines On
 {% endfor %}
 
-{% if fluentb_log_output_map is defined %}
-{% for output in fluentb_log_outputs|dict2items %}
-[OUTPUT] {# multiple indexes #}
-    Name  es_{{ forloop.index0 }}
+{# multiple outputs #}
+{% if fluentb_log_output_map is defined and fluentb_log_output_map|length > 0 %}
+{% for output in fluentb_log_output_map|dict2items %}
+[OUTPUT]
+    Name  es_{{ output.value }}
     Match {{ output.key }}
     Host  {{ fluentb_log_es_host }}
     Port  {{ fluentb_log_es_port }}
     Tag_Key {{ fluentb_log_es_tag_key }}
     Include_Tag_Key On
+    Logstash_Prefix {{ output.value }}     
     Logstash_Format {% if fluentb_log_logstash_format %}On{% else %}Off{% endif %}
 
-    Logstash_Prefix {{ output.value }}     
     Replace_Dots {% if fluentb_log_es_replace_dots %}On{% else %}Off{% endif %}
 
 {% endfor %}
-{% else %}  {# single output #}
+{# single output #}
+{% else %}
 [OUTPUT]
-    Name  es_{{ forloop.index0 }}
-    Match {{ output.value  }}
+    Name  es
+    Match {{ fluentb_log_es_match }}
     Host  {{ fluentb_log_es_host }}
     Port  {{ fluentb_log_es_port }}
     Tag_Key {{ fluentb_log_es_tag_key }}
     Include_Tag_Key On
+    Logstash_Prefix {{ fluentb_log_logstash_prefix }}     
     Logstash_Format {% if fluentb_log_logstash_format %}On{% else %}Off{% endif %}
 
-    Logstash_Prefix {{ fluentb_log_logstash_prefix }}     
     Replace_Dots {% if fluentb_log_es_replace_dots %}On{% else %}Off{% endif %}
-    Logstash_Prefix {{ fluentb_log_logstash_prefix }}     
+
 {% endif %}
